@@ -13,7 +13,6 @@ import androidx.core.app.NotificationCompat
 class EproVpnService : VpnService() {
 
     private var vpnInterface: ParcelFileDescriptor? = null
-    private var isRunning = false
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         if (intent?.action == "DISCONNECT") {
@@ -24,21 +23,17 @@ class EproVpnService : VpnService() {
         val host = intent?.getStringExtra("host") ?: "sg1.eprovpn.com"
         val mode = intent?.getStringExtra("mode") ?: "HTTP Proxy"
 
-        // Anzisha notification mara moja
-        startForeground(1, buildNotification("Connected - $mode", "Server: $host • Tap to open"))
+        startForeground(1, buildNotification("Connected - $mode", "Server: $host - Tap to open"))
 
         Thread {
             try {
-                isRunning = true
-                val builder = Builder(this)
+                val builder = Builder()
                 builder.setSession("eProVPN")
                 builder.addAddress("10.8.0.2", 32)
                 builder.addRoute("0.0.0.0", 0)
                 builder.addDnsServer("8.8.8.8")
                 builder.addDnsServer("1.1.1.1")
                 vpnInterface = builder.establish()
-                // Hapa baadaye SSH / Payload / V2Ray itaunganishwa
-                // Kwa sasa VPN interface imefunguliwa na notification inaonekana
             } catch (e: Exception) {
                 e.printStackTrace()
                 stopVpn()
@@ -70,7 +65,6 @@ class EproVpnService : VpnService() {
     }
 
     private fun stopVpn() {
-        isRunning = false
         try { vpnInterface?.close() } catch (e: Exception) {}
         vpnInterface = null
         stopForeground(true)
