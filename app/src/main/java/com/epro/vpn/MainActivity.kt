@@ -59,7 +59,6 @@ class MainActivity : AppCompatActivity() {
         layoutSsMethod = findViewById(R.id.layoutSsMethod)
         layoutUserPass = findViewById(R.id.layoutUserPass)
 
-        // Modes
         findViewById<Button>(R.id.btnHttpProxy).setOnClickListener { setMode("HTTP Proxy") }
         findViewById<Button>(R.id.btnSshTls).setOnClickListener { setMode("SSH/TLS") }
         findViewById<Button>(R.id.btnSslProxy).setOnClickListener { setMode("SSL/TLS Proxy") }
@@ -67,18 +66,6 @@ class MainActivity : AppCompatActivity() {
         findViewById<Button>(R.id.btnHysteria).setOnClickListener { setMode("Hysteria") }
         findViewById<Button>(R.id.btnPsiphon).setOnClickListener { setMode("Psiphon") }
         findViewById<Button>(R.id.btnShadowsocks).setOnClickListener { setMode("Shadowsocks") }
-
-        findViewById<TextView>(R.id.btnServers).setOnClickListener {
-            startActivity(Intent(this, ServersActivity::class.java))
-        }
-        findViewById<TextView>(R.id.btnPremium).setOnClickListener {
-            startActivity(Intent(this, PremiumActivity::class.java))
-        }
-
-        // Servers
-        findViewById<LinearLayout>(R.id.serverSingapore).setOnClickListener { selectServer("Singapore", "sg1.eprovpn.com") }
-        findViewById<LinearLayout>(R.id.serverUSA).setOnClickListener { selectServer("USA", "us2.eprovpn.com") }
-        findViewById<LinearLayout>(R.id.serverGermany).setOnClickListener { selectServer("Germany", "de3.eprovpn.com") }
 
         btnConnect.setOnClickListener {
             if (!isConnected) startVpn() else stopVpn()
@@ -90,7 +77,6 @@ class MainActivity : AppCompatActivity() {
 
     private fun setMode(mode: String) {
         selectedMode = mode
-
         layoutPayload.visibility = View.GONE
         layoutRemote.visibility = View.GONE
         layoutSni.visibility = View.GONE
@@ -126,9 +112,7 @@ class MainActivity : AppCompatActivity() {
                 layoutSni.visibility = View.VISIBLE
                 etUuid.hint = "Auth Password"
             }
-            "Psiphon" -> {
-                // Server, Username, Password tu - hakuna cha ziada
-            }
+            "Psiphon" -> { }
             "Shadowsocks" -> {
                 layoutSsMethod.visibility = View.VISIBLE
                 layoutUserPass.visibility = View.GONE
@@ -136,11 +120,6 @@ class MainActivity : AppCompatActivity() {
         }
         log("Mode: $mode")
         Toast.makeText(this, mode, Toast.LENGTH_SHORT).show()
-    }
-
-    private fun selectServer(name: String, host: String) {
-        etServer.setText(host)
-        log("Server: $name ($host)")
     }
 
     private fun log(msg: String) {
