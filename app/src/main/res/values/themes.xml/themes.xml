@@ -1,0 +1,8 @@
+<resources>
+    <style name="Theme.eProVPN" parent="Theme.AppCompat.DayNight.NoActionBar">
+        <item name="colorPrimary">#00E676</item>
+        <item name="colorPrimaryDark">#0B0F1A</item>
+        <item name="colorAccent">#00E676</item>
+        <item name="android:windowBackground">#0B0F1A</item>
+    </style>
+</resources>
