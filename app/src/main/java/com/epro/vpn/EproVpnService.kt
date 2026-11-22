@@ -3,159 +3,111 @@ package com.epro.vpn
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
-import android.app.PendingIntent
 import android.content.Intent
 import android.net.VpnService
+import android.os.Build
 import android.os.ParcelFileDescriptor
 import android.util.Log
-import java.io.FileInputStream
-import java.io.FileOutputStream
-import java.net.InetSocketAddress
-import java.net.Socket
-import java.util.concurrent.atomic.AtomicBoolean
 
 class EproVpnService : VpnService() {
 
     private var vpnInterface: ParcelFileDescriptor? = null
-    private var vpnThread: Thread? = null
-    private val running = AtomicBoolean(false)
-    private var currentMode = "HTTP Proxy"
-    private var currentHost = ""
-
-    companion object {
-        const val TAG = "eProVPN"
-    }
-
-    override fun onCreate() {
-        super.onCreate()
-        createChannel()
-    }
+    @Volatile private var running = false
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        if (intent?.action == "DISCONNECT") {
-            stopVpn()
-            return START_NOT_STICKY
+        try {
+            if (intent?.action == "DISCONNECT") {
+                stopVpn()
+                return START_NOT_STICKY
+            }
+
+            val host = intent?.getStringExtra("host") ?: ""
+            val mode = intent?.getStringExtra("mode") ?: "HTTP Proxy"
+
+            if (host.isBlank()) {
+                Log.e("eProVPN", "Host empty")
+                stopSelf()
+                return START_NOT_STICKY
+            }
+
+            // 1. Notification KWANZA - kabla ya chochote
+            createChannel()
+            val notification = buildNotification("Connecting to $host...")
+            startForeground(1, notification)
+
+            // 2. Anzisha VPN kwenye Thread tofauti
+            running = true
+            Thread {
+                try {
+                    val builder = Builder()
+                    builder.setSession("eProVPN")
+                    builder.addAddress("10.8.0.2", 32)
+                    builder.addDnsServer("8.8.8.8")
+                    builder.addDnsServer("1.1.1.1")
+                    builder.addRoute("0.0.0.0", 0)
+                    builder.setMtu(1500)
+
+                    // USIWEKE addDisallowedApplication hapa - ndio ilikuwa inafanya crash kwa simu zingine
+                    vpnInterface = builder.establish()
+
+                    if (vpnInterface == null) {
+                        Log.e("eProVPN", "establish() returned null")
+                        stopVpn()
+                        return@Thread
+                    }
+
+                    updateNotification("Connected - $mode | $host")
+                    Log.d("eProVPN", "VPN Connected to $host")
+
+                    // Keep alive - subiri tu mpaka user a-disconnect
+                    while (running) {
+                        try { Thread.sleep(1000) } catch (e: Exception) { break }
+                    }
+                } catch (e: Exception) {
+                    Log.e("eProVPN", "VPN Thread crash: ${e.message}")
+                    e.printStackTrace()
+                    try { updateNotification("Failed: ${e.message}") } catch (ex: Exception) {}
+                    try { Thread.sleep(1500) } catch (ex: Exception) {}
+                    stopVpn()
+                }
+            }.start()
+
+        } catch (e: Exception) {
+            Log.e("eProVPN", "onStartCommand crash: ${e.message}")
+            e.printStackTrace()
+            try { stopSelf() } catch (ex: Exception) {}
         }
-
-        val host = intent?.getStringExtra("host") ?: ""
-        val port = intent?.getStringExtra("port")?.toIntOrNull() ?: 443
-        val mode = intent?.getStringExtra("mode") ?: "HTTP Proxy"
-        val sni = intent?.getStringExtra("sni") ?: ""
-        val payload = intent?.getStringExtra("payload") ?: ""
-
-        if (host.isEmpty()) {
-            Log.e(TAG, "Host empty - cannot connect")
-            stopSelf()
-            return START_NOT_STICKY
-        }
-
-        currentHost = host
-        currentMode = mode
-
-        // Kama tayari ina-run, isimamishe kwanza
-        stopVpn()
-
-        startForeground(1, buildNotification("Connecting to $host..."))
-        startVpn(host, port, mode, sni, payload)
         return START_STICKY
     }
 
-    private fun startVpn(host: String, port: Int, mode: String, sni: String, payload: String) {
-        running.set(true)
-        vpnThread = Thread {
-            try {
-                // 1. Jaribu kuunganisha kwenye server halisi kwanza
-                val socket = Socket()
-                socket.connect(InetSocketAddress(host, port), 8000)
-                Log.d(TAG, "TCP Connected to $host:$port - Mode: $mode")
-                // Usifunge socket mara moja - acha i-run kama tunnel test
-                // Tutaifunga baada ya VPN interface kuanzishwa
-
-                // 2. Anzisha VPN Interface HALISI
-                val builder = Builder()
-                builder.setSession("eProVPN")
-                    .addAddress("10.8.0.2", 32)
-                    .addDnsServer("8.8.8.8")
-                    .addDnsServer("1.1.1.1")
-                    .addRoute("0.0.0.0", 0)
-                    .setMtu(1500)
-
-                // Usiruhusu app yenyewe kupita kwenye VPN - kuzuia loop
-                try { builder.addDisallowedApplication(packageName) } catch (e: Exception) {}
-
-                vpnInterface = builder.establish()
-                if (vpnInterface == null) {
-                    Log.e(TAG, "Failed to establish VPN interface")
-                    socket.close()
-                    stopVpn()
-                    return@Thread
-                }
-
-                Log.d(TAG, "VPN Interface Established")
-                updateNotification("Connected - $mode | $host")
-
-                val input = FileInputStream(vpnInterface!!.fileDescriptor)
-                val output = FileOutputStream(vpnInterface!!.fileDescriptor)
-                val buffer = ByteArray(32767)
-
-                // 3. Loop ya kusambaza packets - hii ndio KAZI HALISI
-                // Kwa sasa tunasoma packets na kuzitupa, lakini interface iko hai
-                // Hatua inayofuata tutaweka forwarding halisi kupitia socket
-                while (running.get()) {
-                    try {
-                        val len = input.read(buffer)
-                        if (len > 0) {
-                            // Packet imepokelewa - log mara moja tu ili isijaze log
-                            // Hapa ndipo tuta-forward kwenda server
-                        }
-                    } catch (e: Exception) {
-                        if (running.get()) Log.e(TAG, "Read error: ${e.message}")
-                        break
-                    }
-                }
-
-                try { socket.close() } catch (e: Exception) {}
-                try { input.close() } catch (e: Exception) {}
-                try { output.close() } catch (e: Exception) {}
-
-            } catch (e: Exception) {
-                Log.e(TAG, "Connection failed: ${e.message}")
-                e.printStackTrace()
-                updateNotification("Failed: ${e.message}")
-                // Subiri sekunde 2 ndio usimamishe ili user aone error
-                try { Thread.sleep(2000) } catch (ex: Exception) {}
-                stopVpn()
-            }
-        }
-        vpnThread?.start()
-    }
-
     private fun stopVpn() {
-        running.set(false)
+        running = false
         try { vpnInterface?.close() } catch (e: Exception) {}
         vpnInterface = null
-        try { vpnThread?.interrupt() } catch (e: Exception) {}
-        vpnThread = null
         try { stopForeground(true) } catch (e: Exception) {}
         try { stopSelf() } catch (e: Exception) {}
     }
 
     private fun createChannel() {
         try {
-            val channel = NotificationChannel("epro_vpn", "eProVPN", NotificationManager.IMPORTANCE_LOW)
-            val nm = getSystemService(NotificationManager::class.java)
-            nm?.createNotificationChannel(channel)
-        } catch (e: Exception) {}
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                val ch = NotificationChannel("epro_vpn", "eProVPN", NotificationManager.IMPORTANCE_LOW)
+                val nm = getSystemService(NotificationManager::class.java)
+                nm?.createNotificationChannel(ch)
+            }
+        } catch (e: Exception) { Log.e("eProVPN", "Channel: ${e.message}") }
     }
 
     private fun buildNotification(text: String): Notification {
-        val intent = Intent(this, MainActivity::class.java)
-        val pi = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
-        return Notification.Builder(this, "epro_vpn")
+        val builder = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            Notification.Builder(this, "epro_vpn")
+        } else {
+            Notification.Builder(this)
+        }
+        return builder
             .setContentTitle("eProVPN")
             .setContentText(text)
             .setSmallIcon(android.R.drawable.ic_lock_lock)
-            .setContentIntent(pi)
             .setOngoing(true)
             .build()
     }
@@ -168,12 +120,12 @@ class EproVpnService : VpnService() {
     }
 
     override fun onDestroy() {
-        stopVpn()
+        try { stopVpn() } catch (e: Exception) {}
         super.onDestroy()
     }
 
     override fun onRevoke() {
-        stopVpn()
+        try { stopVpn() } catch (e: Exception) {}
         super.onRevoke()
     }
 }
