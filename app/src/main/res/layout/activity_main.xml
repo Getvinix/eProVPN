@@ -17,8 +17,7 @@
             android:textColor="#00E676"
             android:textSize="28sp"
             android:textStyle="bold"
-            android:gravity="center"
-            android:layout_marginBottom="4dp" />
+            android:gravity="center" />
 
         <TextView
             android:layout_width="match_parent"
@@ -29,20 +28,21 @@
             android:gravity="center"
             android:layout_marginBottom="16dp" />
 
+        <!-- MODE DROPDOWN -->
         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="SELECT MODE" android:textColor="#00E676" android:textStyle="bold" android:textSize="13sp" />
+        <Spinner
+            android:id="@+id/spinnerMode"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:background="#1E2A3A"
+            android:layout_marginTop="8dp" />
 
-        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginTop="8dp">
-            <Button android:id="@+id/btnHttpProxy" android:layout_width="0dp" android:layout_height="48dp" android:layout_weight="1" android:text="HTTP Proxy" android:textSize="11sp" android:backgroundTint="#1E2A3A" android:textColor="#FFFFFF" />
-            <Button android:id="@+id/btnSshTls" android:layout_width="0dp" android:layout_height="48dp" android:layout_weight="1" android:text="SSH/TLS" android:textSize="11sp" android:backgroundTint="#1E2A3A" android:textColor="#FFFFFF" />
-            <Button android:id="@+id/btnSslProxy" android:layout_width="0dp" android:layout_height="48dp" android:layout_weight="1" android:text="SSL PROXY" android:textSize="11sp" android:backgroundTint="#1E2A3A" android:textColor="#FFFFFF" />
-        </LinearLayout>
+        <!-- CONFIG NAME -->
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="CONFIG NAME" android:textColor="#00E676" android:textStyle="bold" android:textSize="13sp" android:layout_marginTop="16dp" />
+        <EditText android:id="@+id/etConfigName" android:layout_width="match_parent" android:layout_height="50dp" android:hint="Mf: Safaricom Free Dec" android:textColor="#FFFFFF" android:textColorHint="#888888" android:background="#1E2A3A" android:padding="12dp" android:layout_marginTop="8dp" />
 
-        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginTop="8dp">
-            <Button android:id="@+id/btnV2ray" android:layout_width="0dp" android:layout_height="48dp" android:layout_weight="1" android:text="V2RAY" android:textSize="11sp" android:backgroundTint="#1E2A3A" android:textColor="#FFFFFF" />
-            <Button android:id="@+id/btnHysteria" android:layout_width="0dp" android:layout_height="48dp" android:layout_weight="1" android:text="HYSTERIA" android:textSize="11sp" android:backgroundTint="#1E2A3A" android:textColor="#FFFFFF" />
-            <Button android:id="@+id/btnPsiphon" android:layout_width="0dp" android:layout_height="48dp" android:layout_weight="1" android:text="PSIPHON" android:textSize="11sp" android:backgroundTint="#1E2A3A" android:textColor="#FFFFFF" />
-            <Button android:id="@+id/btnShadowsocks" android:layout_width="0dp" android:layout_height="48dp" android:layout_weight="1" android:text="SHADOW" android:textSize="11sp" android:backgroundTint="#1E2A3A" android:textColor="#FFFFFF" />
-        </LinearLayout>
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="CREATOR NAME" android:textColor="#00E676" android:textStyle="bold" android:textSize="13sp" android:layout_marginTop="12dp" />
+        <EditText android:id="@+id/etCreator" android:layout_width="match_parent" android:layout_height="50dp" android:hint="Jina lako" android:textColor="#FFFFFF" android:textColorHint="#888888" android:background="#1E2A3A" android:padding="12dp" android:layout_marginTop="8dp" />
 
         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="SERVER SETTINGS" android:textColor="#00E676" android:textStyle="bold" android:textSize="13sp" android:layout_marginTop="20dp" />
 
@@ -54,7 +54,10 @@
             <EditText android:id="@+id/etPassword" android:layout_width="match_parent" android:layout_height="50dp" android:hint="Password" android:inputType="textPassword" android:textColor="#FFFFFF" android:textColorHint="#888888" android:background="#1E2A3A" android:padding="12dp" android:layout_marginTop="8dp" />
         </LinearLayout>
 
+        <!-- PAYLOAD DROPDOWN -->
         <LinearLayout android:id="@+id/layoutPayload" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="PAYLOAD PRESET" android:textColor="#00E676" android:textSize="12sp" android:textStyle="bold" android:layout_marginTop="12dp" />
+            <Spinner android:id="@+id/spinnerPayload" android:layout_width="match_parent" android:layout_height="50dp" android:background="#1E2A3A" android:layout_marginTop="8dp" />
             <EditText android:id="@+id/etPayload" android:layout_width="match_parent" android:layout_height="90dp" android:hint="Payload" android:gravity="top" android:textColor="#FFFFFF" android:textColorHint="#888888" android:background="#1E2A3A" android:padding="12dp" android:layout_marginTop="8dp" />
         </LinearLayout>
 
@@ -76,10 +79,22 @@
         </LinearLayout>
 
         <LinearLayout android:id="@+id/layoutSsMethod" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
-            <EditText android:id="@+id/etSsMethod" android:layout_width="match_parent" android:layout_height="50dp" android:hint="Method: aes-256-gcm" android:text="aes-256-gcm" android:textColor="#FFFFFF" android:textColorHint="#888888" android:background="#1E2A3A" android:padding="12dp" android:layout_marginTop="8dp" />
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="SHADOWSOCKS METHOD" android:textColor="#00E676" android:textSize="12sp" android:textStyle="bold" android:layout_marginTop="12dp" />
+            <Spinner android:id="@+id/spinnerSsMethod" android:layout_width="match_parent" android:layout_height="50dp" android:background="#1E2A3A" android:layout_marginTop="8dp" />
+            <EditText android:id="@+id/etSsMethod" android:layout_width="match_parent" android:layout_height="50dp" android:hint="Method" android:text="aes-256-gcm" android:textColor="#FFFFFF" android:textColorHint="#888888" android:background="#1E2A3A" android:padding="12dp" android:layout_marginTop="8dp" />
         </LinearLayout>
 
-        <Button android:id="@+id/btnConnect" android:layout_width="match_parent" android:layout_height="58dp" android:text="CONNECT" android:textSize="18sp" android:textStyle="bold" android:backgroundTint="#00E676" android:textColor="#000000" android:layout_marginTop="20dp" />
+        <!-- NOTES / DESCRIPTION -->
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="NOTES / DESCRIPTION (Kwa aliyeunda)" android:textColor="#00E676" android:textStyle="bold" android:textSize="13sp" android:layout_marginTop="20dp" />
+        <EditText android:id="@+id/etNotes" android:layout_width="match_parent" android:layout_height="100dp" android:hint="Andika hapa: Inafanya kazi na mtandao gani? Speed? Maelezo mengine..." android:gravity="top" android:textColor="#FFFFFF" android:textColorHint="#888888" android:background="#1E2A3A" android:padding="12dp" android:layout_marginTop="8dp" />
+
+        <!-- EXPORT / IMPORT -->
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginTop="16dp">
+            <Button android:id="@+id/btnExport" android:layout_width="0dp" android:layout_height="50dp" android:layout_weight="1" android:text="⬆ EXPORT" android:backgroundTint="#FF9800" android:textColor="#000000" />
+            <Button android:id="@+id/btnImport" android:layout_width="0dp" android:layout_height="50dp" android:layout_weight="1" android:text="⬇ IMPORT" android:backgroundTint="#2196F3" android:textColor="#FFFFFF" android:layout_marginStart="8dp" />
+        </LinearLayout>
+
+        <Button android:id="@+id/btnConnect" android:layout_width="match_parent" android:layout_height="58dp" android:text="CONNECT" android:textSize="18sp" android:textStyle="bold" android:backgroundTint="#00E676" android:textColor="#000000" android:layout_marginTop="16dp" />
 
         <TextView android:id="@+id/tvLog" android:layout_width="match_parent" android:layout_height="150dp" android:text="Log..." android:textColor="#00FF00" android:textSize="11sp" android:background="#111111" android:padding="10dp" android:layout_marginTop="16dp" />
 
