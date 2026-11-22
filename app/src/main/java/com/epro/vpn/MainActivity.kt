@@ -44,27 +44,13 @@ class MainActivity : AppCompatActivity() {
     private var selectedMode = "HTTP Proxy"
 
     private val modes = listOf("HTTP Proxy","SSH/TLS","SSL/TLS Proxy","V2Ray/Xray","Hysteria","Psiphon","Shadowsocks")
-    private val payloadPresets = listOf(
-        "Custom - Andika mwenyewe",
-        "GET Standard",
-        "GET + Keep Alive",
-        "CONNECT Standard",
-        "POST Standard"
-    )
-    private val payloadValues = listOf(
-        "",
-        "GET / HTTP/1.1[crlf]Host: [sni][crlf][crlf]",
-        "GET / HTTP/1.1[crlf]Host: [sni][crlf]Connection: keep-alive[crlf][crlf]",
-        "CONNECT [host_port] HTTP/1.1[crlf]Host: [sni][crlf][crlf]",
-        "POST / HTTP/1.1[crlf]Host: [sni][crlf]Content-Length: 0[crlf][crlf]"
-    )
+    private val payloadPresets = listOf("Custom - Andika mwenyewe","GET Standard","GET + Keep Alive","CONNECT Standard","POST Standard")
+    private val payloadValues = listOf("","GET / HTTP/1.1[crlf]Host: [sni][crlf][crlf]","GET / HTTP/1.1[crlf]Host: [sni][crlf]Connection: keep-alive[crlf][crlf]","CONNECT [host_port] HTTP/1.1[crlf]Host: [sni][crlf][crlf]","POST / HTTP/1.1[crlf]Host: [sni][crlf]Content-Length: 0[crlf][crlf]")
     private val ssMethods = listOf("aes-256-gcm","aes-128-gcm","chacha20-ietf-poly1305","aes-256-cfb","plain")
 
-    // EXPORT - Chagua wapi kuhifadhi file
     private val exportLauncher = registerForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri ->
         uri?.let { writeExportFile(it) }
     }
-    // IMPORT - Chagua file
     private val importLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         uri?.let { readImportFile(it) }
     }
@@ -100,14 +86,12 @@ class MainActivity : AppCompatActivity() {
         spinnerPayload = findViewById(R.id.spinnerPayload)
         spinnerSsMethod = findViewById(R.id.spinnerSsMethod)
 
-        // --- DROPDOWN: MODE ---
         spinnerMode.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, modes)
         spinnerMode.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(p: AdapterView<*>?, v: View?, pos: Int, id: Long) { setMode(modes[pos]) }
             override fun onNothingSelected(p: AdapterView<*>?) {}
         }
 
-        // --- DROPDOWN: PAYLOAD ---
         spinnerPayload.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, payloadPresets)
         spinnerPayload.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(p: AdapterView<*>?, v: View?, pos: Int, id: Long) {
@@ -116,7 +100,6 @@ class MainActivity : AppCompatActivity() {
             override fun onNothingSelected(p: AdapterView<*>?) {}
         }
 
-        // --- DROPDOWN: SHADOWSOCKS METHOD ---
         spinnerSsMethod.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, ssMethods)
         spinnerSsMethod.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(p: AdapterView<*>?, v: View?, pos: Int, id: Long) { etSsMethod.setText(ssMethods[pos]) }
@@ -131,10 +114,9 @@ class MainActivity : AppCompatActivity() {
         }
 
         setMode("HTTP Proxy")
-        log("eProVPN ready... Chagua Mode, Export au Import")
+        log("eProVPN ready...")
     }
 
-    // ===== EXPORT =====
     private fun exportConfig() {
         val name = etConfigName.text.toString().ifEmpty { "epro-config" }
         exportLauncher.launch("$name.epro")
@@ -161,17 +143,14 @@ class MainActivity : AppCompatActivity() {
             json.put("vlessLink", etVlessLink.text.toString())
             json.put("ssMethod", etSsMethod.text.toString())
             json.put("createdAt", System.currentTimeMillis().toString())
-
             contentResolver.openOutputStream(uri)?.use { it.write(json.toString(2).toByteArray()) }
             log("Exported: ${etConfigName.text}.epro")
-            Toast.makeText(this, "Exported! Tuma file kwa mtu mwingine", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, "Exported!", Toast.LENGTH_LONG).show()
         } catch (e: Exception) {
             log("Export failed: ${e.message}")
-            Toast.makeText(this, "Export failed", Toast.LENGTH_SHORT).show()
         }
     }
 
-    // ===== IMPORT =====
     private fun readImportFile(uri: Uri) {
         try {
             val text = contentResolver.openInputStream(uri)?.bufferedReader()?.readText() ?: return
@@ -190,13 +169,10 @@ class MainActivity : AppCompatActivity() {
             etUuid.setText(json.optString("uuid"))
             etVlessLink.setText(json.optString("vlessLink"))
             etSsMethod.setText(json.optString("ssMethod"))
-
             val mode = json.optString("mode", "HTTP Proxy")
             val idx = modes.indexOf(mode)
             if (idx >= 0) spinnerMode.setSelection(idx)
             setMode(mode)
-
-            // Onyesha Notes za muundaji kwa alert
             val notes = json.optString("notes")
             val creator = json.optString("creator")
             if (notes.isNotEmpty()) {
