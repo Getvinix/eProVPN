@@ -20,9 +20,6 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".ServersActivity" android:exported="false" />
-        <activity android:name=".PremiumActivity" android:exported="false" />
-
         <service
             android:name=".EproVpnService"
             android:permission="android.permission.BIND_VPN_SERVICE"
