@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 
 class MainActivity : AppCompatActivity() {
 
@@ -32,7 +33,6 @@ class MainActivity : AppCompatActivity() {
 
     private var isConnected = false
     private var selectedMode = "HTTP Proxy"
-    private var selectedServer = "sg1.eprovpn.com"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -59,33 +59,38 @@ class MainActivity : AppCompatActivity() {
         layoutSsMethod = findViewById(R.id.layoutSsMethod)
         layoutUserPass = findViewById(R.id.layoutUserPass)
 
-        // Mode buttons
-        findViewById<Button>(R.id.btnHttpProxy)?.setOnClickListener { setMode("HTTP Proxy") }
-        findViewById<Button>(R.id.btnSshTls)?.setOnClickListener { setMode("SSH/TLS") }
-        findViewById<Button>(R.id.btnSslProxy)?.setOnClickListener { setMode("SSL/TLS Proxy") }
-        findViewById<Button>(R.id.btnV2ray)?.setOnClickListener { setMode("V2Ray/Xray") }
-        findViewById<Button>(R.id.btnHysteria)?.setOnClickListener { setMode("Hysteria") }
-        findViewById<Button>(R.id.btnPsiphon)?.setOnClickListener { setMode("Psiphon") }
-        findViewById<Button>(R.id.btnShadowsocks)?.setOnClickListener { setMode("Shadowsocks") }
+        // Modes
+        findViewById<Button>(R.id.btnHttpProxy).setOnClickListener { setMode("HTTP Proxy") }
+        findViewById<Button>(R.id.btnSshTls).setOnClickListener { setMode("SSH/TLS") }
+        findViewById<Button>(R.id.btnSslProxy).setOnClickListener { setMode("SSL/TLS Proxy") }
+        findViewById<Button>(R.id.btnV2ray).setOnClickListener { setMode("V2Ray/Xray") }
+        findViewById<Button>(R.id.btnHysteria).setOnClickListener { setMode("Hysteria") }
+        findViewById<Button>(R.id.btnPsiphon).setOnClickListener { setMode("Psiphon") }
+        findViewById<Button>(R.id.btnShadowsocks).setOnClickListener { setMode("Shadowsocks") }
 
-        findViewById<TextView>(R.id.btnServers)?.setOnClickListener { startActivity(Intent(this, ServersActivity::class.java)) }
-        findViewById<TextView>(R.id.btnPremium)?.setOnClickListener { startActivity(Intent(this, PremiumActivity::class.java)) }
+        findViewById<TextView>(R.id.btnServers).setOnClickListener {
+            startActivity(Intent(this, ServersActivity::class.java))
+        }
+        findViewById<TextView>(R.id.btnPremium).setOnClickListener {
+            startActivity(Intent(this, PremiumActivity::class.java))
+        }
 
-        // Server list
-        findViewById<LinearLayout>(R.id.serverSingapore)?.setOnClickListener { selectServer("Singapore", "sg1.eprovpn.com") }
-        findViewById<LinearLayout>(R.id.serverUSA)?.setOnClickListener { selectServer("USA", "us2.eprovpn.com") }
-        findViewById<LinearLayout>(R.id.serverGermany)?.setOnClickListener { selectServer("Germany", "de3.eprovpn.com") }
+        // Servers
+        findViewById<LinearLayout>(R.id.serverSingapore).setOnClickListener { selectServer("Singapore", "sg1.eprovpn.com") }
+        findViewById<LinearLayout>(R.id.serverUSA).setOnClickListener { selectServer("USA", "us2.eprovpn.com") }
+        findViewById<LinearLayout>(R.id.serverGermany).setOnClickListener { selectServer("Germany", "de3.eprovpn.com") }
 
-        btnConnect.setOnClickListener { if (!isConnected) startVpn() else stopVpn() }
+        btnConnect.setOnClickListener {
+            if (!isConnected) startVpn() else stopVpn()
+        }
 
         setMode("HTTP Proxy")
         log("eProVPN ready...")
-        log("Mode: HTTP Proxy")
     }
 
     private fun setMode(mode: String) {
         selectedMode = mode
-        // Weka zote GONE kwanza
+
         layoutPayload.visibility = View.GONE
         layoutRemote.visibility = View.GONE
         layoutSni.visibility = View.GONE
@@ -96,18 +101,15 @@ class MainActivity : AppCompatActivity() {
 
         when (mode) {
             "HTTP Proxy" -> {
-                // Payload, Remote Proxy, Port, Server, Username, Password
                 layoutPayload.visibility = View.VISIBLE
                 layoutRemote.visibility = View.VISIBLE
                 etPayload.setText("GET / HTTP/1.1[crlf]Host: [sni][crlf][crlf]")
             }
             "SSH/TLS" -> {
-                // Server, Username, Password, SNI
                 layoutSni.visibility = View.VISIBLE
                 etSni.setText("example.com")
             }
             "SSL/TLS Proxy" -> {
-                // Server, Username, Password, Payload, Remote Proxy, Port, SNI
                 layoutPayload.visibility = View.VISIBLE
                 layoutRemote.visibility = View.VISIBLE
                 layoutSni.visibility = View.VISIBLE
@@ -125,19 +127,18 @@ class MainActivity : AppCompatActivity() {
                 etUuid.hint = "Auth Password"
             }
             "Psiphon" -> {
-                // Server, Username, Password tu
+                // Server, Username, Password tu - hakuna cha ziada
             }
             "Shadowsocks" -> {
                 layoutSsMethod.visibility = View.VISIBLE
                 layoutUserPass.visibility = View.GONE
             }
         }
-        log("Mode changed: $mode")
+        log("Mode: $mode")
         Toast.makeText(this, mode, Toast.LENGTH_SHORT).show()
     }
 
     private fun selectServer(name: String, host: String) {
-        selectedServer = host
         etServer.setText(host)
         log("Server: $name ($host)")
     }
@@ -149,12 +150,17 @@ class MainActivity : AppCompatActivity() {
 
     private fun startVpn() {
         val intent = VpnService.prepare(this)
-        if (intent != null) startActivityForResult(intent, 100)
-        else onActivityResult(100, RESULT_OK, null)
+        if (intent != null) {
+            startActivityForResult(intent, 100)
+        } else {
+            onActivityResult(100, RESULT_OK, null)
+        }
     }
 
     private fun stopVpn() {
-        startService(Intent(this, EproVpnService::class.java).setAction("DISCONNECT"))
+        val i = Intent(this, EproVpnService::class.java)
+        i.action = "DISCONNECT"
+        ContextCompat.startForegroundService(this, i)
         isConnected = false
         btnConnect.text = "CONNECT"
         log("Disconnected")
@@ -176,10 +182,13 @@ class MainActivity : AppCompatActivity() {
             i.putExtra("ssMethod", etSsMethod.text.toString())
             i.putExtra("remoteProxy", etRemoteProxy.text.toString())
             i.putExtra("remotePort", etRemotePort.text.toString())
-            startService(i)
+            ContextCompat.startForegroundService(this, i)
             isConnected = true
             btnConnect.text = "DISCONNECT"
-            log("Connecting [$selectedMode] to $selectedServer...")
+            log("Connecting [$selectedMode] to ${etServer.text}...")
+        } else if (requestCode == 100) {
+            log("VPN permission denied")
+            Toast.makeText(this, "VPN permission denied", Toast.LENGTH_SHORT).show()
         }
     }
 }
