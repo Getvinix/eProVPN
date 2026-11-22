@@ -1,4 +1,4 @@
-package com.example.eprovpn
+package com.epro.vpn
 
 import android.app.Activity
 import android.content.Intent
