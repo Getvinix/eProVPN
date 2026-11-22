@@ -1,5 +1,6 @@
 package com.epro.vpn
 
+import com.epro.vpn.R
 import android.app.Activity
 import android.content.Intent
 import android.net.VpnService
@@ -75,21 +76,4 @@ class MainActivity : AppCompatActivity() {
         else log("❌ VPN permission denied")
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-        bindViews()
-        setupSpinners()
-        setupListeners()
-        log("eProVPN ready. Chagua MODE kuanza.")
-    }
-
-    private fun bindViews() {
-        spinnerMode = findViewById(R.id.spinnerMode)
-        etConfigName = findViewById(R.id.etConfigName)
-        etCreator = findViewById(R.id.etCreator)
-        etServer = findViewById(R.id.etServer)
-        etPort = findViewById(R.id.etPort)
-        etUsername = findViewById(R.id.etUsername)
-        etPassword = findViewById(R.id.etPassword)
-        spinnerPayload = findViewById(R
+    override fun onCreate
