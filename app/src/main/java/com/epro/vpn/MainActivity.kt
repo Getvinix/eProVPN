@@ -76,7 +76,7 @@ class MainActivity : AppCompatActivity() {
         else log("❌ VPN permission denied")
     }
 
-     override fun onCreate(savedInstanceState: Bundle?) {
+    override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         bindViews()
@@ -214,13 +214,20 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun startVpn() {
+        SshVpnService.server = etServer.text.toString()
+        SshVpnService.port = etPort.text.toString().toIntOrNull() ?: 443
+        SshVpnService.username = etUsername.text.toString()
+        SshVpnService.password = etPassword.text.toString()
+        SshVpnService.sni = etSni.text.toString()
+        SshVpnService.payload = etPayload.text.toString()
+        startService(Intent(this, SshVpnService::class.java))
         isConnected = true
         btnConnect.text = "Disconnect"
-        log("🔌 Connecting to ${etServer.text} : ${etPort.text} ...")
-        log("✅ VPN Connected (Demo Mode)")
+        log("🔌 Connecting SSH to ${SshVpnService.server}:${SshVpnService.port} ...")
     }
 
     private fun stopVpn() {
+        stopService(Intent(this, SshVpnService::class.java))
         isConnected = false
         btnConnect.text = "Connect"
         log("🔌 Disconnected")
