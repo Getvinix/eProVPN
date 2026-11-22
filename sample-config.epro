@@ -1,0 +1,20 @@
+{
+  "app": "eProVPN",
+  "version": 1,
+  "name": "Safaricom Free - Dec",
+  "creator": "Getvinix",
+  "notes": "Inafanya kazi na Safaricom. Usiweke balance. Speed 10Mbps. Kama haifanyi, badilisha SNI kuwa www.safaricom.co.ke",
+  "mode": "HTTP Proxy",
+  "server": "sg1.eprovpn.com",
+  "port": "443",
+  "username": "",
+  "password": "",
+  "payload": "GET / HTTP/1.1[crlf]Host: [sni][crlf][crlf]",
+  "sni": "www.safaricom.co.ke",
+  "remoteProxy": "",
+  "remotePort": "",
+  "uuid": "",
+  "vlessLink": "",
+  "ssMethod": "aes-256-gcm",
+  "createdAt": "2026-11-22"
+}
